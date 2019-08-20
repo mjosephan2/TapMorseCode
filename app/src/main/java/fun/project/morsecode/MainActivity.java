@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
         result = findViewById(R.id.result);
         result_morse = findViewById(R.id.result_morse);
-        Button clear = findViewById(R.id.button2);
-        Button tap = findViewById(R.id.button);
+        Button clear = findViewById(R.id.clear);
+        ImageButton tap = findViewById(R.id.button);
         Button setting = findViewById(R.id.setting_button);
 
         setting.setOnClickListener(new View.OnClickListener() {
@@ -79,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "onTouch: " + word_code);
                         result_morse.append("_");
                         System.out.println("Long Click has happened!");
-                        SimpleToast.show(MainActivity.this,"long Click", Toast.LENGTH_SHORT);
                         return false;
                     } else {
                         /* Implement short click behavior here or do nothing */
@@ -87,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
                         result_morse.append(".");
                         Log.d(TAG, "onTouch: " + word_code);
                         System.out.println("Short Click has happened...");
-                        SimpleToast.show(MainActivity.this,"short Click", Toast.LENGTH_SHORT);
                         return false;
                     }
                 }
