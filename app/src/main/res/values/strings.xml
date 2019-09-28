@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Morse code</string>
+    <string name="status">1 unit time: %d ms\nLetter gap: %d ms\nWord gap: %d ms\n</string>
 </resources>

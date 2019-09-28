@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class MorseCode {
     private static Map<String,String> MORSE_CODE = new HashMap<>();
+    private static Map<String,String> MORSE_CODE_LETTER_TO_CODE = new HashMap<>();
 
     private static void initialize(){
         MORSE_CODE.put("._","a");
@@ -43,6 +44,9 @@ public class MorseCode {
         MORSE_CODE.put("___..","8");
         MORSE_CODE.put("____.","9");
         MORSE_CODE.put("_____","0");
+        for (Map.Entry<String,String> entry: MORSE_CODE.entrySet()){
+            MORSE_CODE_LETTER_TO_CODE.put(entry.getValue(),entry.getKey());
+        }
     }
     public static String getLetter(String code){
         if (MORSE_CODE.isEmpty())
@@ -51,5 +55,14 @@ public class MorseCode {
             return MORSE_CODE.get(code);
         }
         else{return "";}
+    }
+
+    public static String getCode(char letter){
+        if (MORSE_CODE_LETTER_TO_CODE.isEmpty())
+            initialize();
+        if (MORSE_CODE_LETTER_TO_CODE.containsKey(String.valueOf(letter))){
+            return MORSE_CODE_LETTER_TO_CODE.get(String.valueOf(letter));
+        }
+        else{return null;}
     }
 }

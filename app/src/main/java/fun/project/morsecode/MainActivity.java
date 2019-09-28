@@ -2,7 +2,11 @@ package fun.project.morsecode;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -11,15 +15,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.reflect.TypeToken;
 
 
+import fun.project.morsecode.Audio.GenerateSound;
+import fun.project.morsecode.Data.Constant;
 import fun.project.morsecode.Data.MorseCode;
 import fun.project.morsecode.Data.MorseSetting;
+import fun.project.morsecode.Data.MorseTiming;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivityMorse";
@@ -30,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private long up;
     private MorseSetting morseSetting;
     private String word_code = "";
+    private Handler handler = new Handler();
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,11 +47,14 @@ public class MainActivity extends AppCompatActivity {
         // load
         morseSetting = load();
         // using PARIS standard
+        // set the dotDuration
+        MorseTiming.setDotDuration(1200/morseSetting.getSpeed_gap());
         dot_duration = 1200/morseSetting.getSpeed_gap();
 
         result = findViewById(R.id.result);
         result_morse = findViewById(R.id.result_morse);
         Button clear = findViewById(R.id.clear);
+        ImageView audio = findViewById(R.id.audio);
         ImageButton tap = findViewById(R.id.button);
         Button setting = findViewById(R.id.setting_button);
 
@@ -51,6 +62,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 createWPMDialog();
+            }
+        });
+        audio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!result.getText().toString().trim().equals("")){
+                    GenerateSound.playSound(morseSetting.getFrequency(),result.getText().toString().trim());
+                }
             }
         });
         clear.setOnClickListener(new View.OnClickListener() {
@@ -74,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                         start();
                         inDoing = true;
                     }
-                    if ((up - down) > dot_duration*3) {
+                    if ((up - down) > MorseTiming.longClickDuration) {
                         /* Implement long click behavior here */
                         word_code+="_";
                         Log.d(TAG, "onTouch: " + word_code);
@@ -113,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
+        GenerateSound.stopPlay();
+        handler.removeCallbacksAndMessages(null);
         super.onStop();
         Log.d(TAG, "onStop: ");
     }
@@ -168,6 +189,9 @@ public class MainActivity extends AppCompatActivity {
         final TextView wpm_textView_val = mView.findViewById(R.id.wpm_textView_val);
         final TextView speed_gap_textView_val = mView.findViewById(R.id.speed_gap_textView_val);
         final TextView freq_textView_val = mView.findViewById(R.id.freq_textView_val);
+        final TextView status = mView.findViewById(R.id.status);
+        Button playSOS = mView.findViewById(R.id.audio_button);
+        Button playMARIO = mView.findViewById(R.id.audio_button2);
 
         wpm.setMax(max-min);
         speed_gap.setMax(max-min);
@@ -181,6 +205,35 @@ public class MainActivity extends AppCompatActivity {
         speed_gap_textView_val.setText(Integer.toString(speed_gap_val));
         freq_textView_val.setText(Integer.toString(frequency_val));
 
+        status.setText(String.format(
+                getResources().getString(R.string.status),
+                MorseTiming.dotGap, MorseTiming.letterGap, MorseTiming.wordGap
+                )
+        );
+
+        playSOS.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        GenerateSound.playSound(frequency.getProgress()+minf , "sos");
+                    }
+                });
+            }
+        });
+
+        playMARIO.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        GenerateSound.playSound(frequency.getProgress()+minf , "mario");
+                    }
+                });
+            }
+        });
         mBuilder.setView(mView);
         AlertDialog dialog = mBuilder.create();
 
@@ -192,7 +245,19 @@ public class MainActivity extends AppCompatActivity {
                         wpm_textView_val.setText(Integer.toString(i+min));
                         break;
                     case R.id.speed_gap_seekBar:
-                        speed_gap_textView_val.setText(Integer.toString(i+min));
+                        if (i> wpm.getProgress())
+                            speed_gap.setProgress(wpm.getProgress());
+                        speed_gap_textView_val.setText(Integer.toString(speed_gap.getProgress()+min));
+                        // update dot duration
+                        MorseTiming.setDotDuration(1200/(speed_gap.getProgress()+min));
+                        dot_duration = 1200/(speed_gap.getProgress()+min);
+
+                        // update UI timing
+                        status.setText(String.format(
+                                getResources().getString(R.string.status),
+                                MorseTiming.dotGap, MorseTiming.letterGap, MorseTiming.wordGap
+                                )
+                        );
                         break;
                     case R.id.freq_seekBar:
                         freq_textView_val.setText(Integer.toString(i+minf));
@@ -225,16 +290,20 @@ public class MainActivity extends AppCompatActivity {
                 // replace the current morseSetting
                 morseSetting = new MorseSetting(wpm.getProgress()+min,speed_gap.getProgress()+min,frequency.getProgress()+minf);
                 save(morseSetting);
+                // stop the handler
+                handler.removeCallbacksAndMessages(null);
             }
         });
         dialog.show();
     }
+
+
     class Checking implements Runnable{
         private boolean added_space = false;
         private long time_checking_timing = 20;
-        private int letter_gap = 3*dot_duration;
-        private int word_gap = 7*dot_duration;
-        private int done_gap = 14*dot_duration;
+        private int letter_gap = MorseTiming.letterGap;
+        private int word_gap = MorseTiming.wordGap;
+        private int done_gap = MorseTiming.done_gap;
 
         private void sleep(long millis) {
             try {
@@ -266,10 +335,19 @@ public class MainActivity extends AppCompatActivity {
                 else if ((System.currentTimeMillis()-up)>letter_gap){
                     // call only when the word code is not empty
                     if (!word_code.equals("")){
-                        result.append(MorseCode.getLetter(word_code));
-                        result_morse.append(" ");
-                        word_code = "";
-                        added_space = false;
+                        if (MorseCode.getLetter(word_code).equals("")){
+                            // delete the morse code if it is invalid
+                            result_morse.getEditableText().delete(
+                                    result_morse.length()-word_code.length()
+                                    ,result_morse.length());
+                            word_code = "";
+                        }
+                        else{
+                            result.append(MorseCode.getLetter(word_code));
+                            result_morse.append(" ");
+                            word_code = "";
+                            added_space = false;
+                        }
                     }
                 }
             }
