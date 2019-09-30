@@ -2,9 +2,6 @@ package fun.project.morsecode;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -21,9 +18,7 @@ import android.widget.TextView;
 
 import com.google.gson.reflect.TypeToken;
 
-
 import fun.project.morsecode.Audio.GenerateSound;
-import fun.project.morsecode.Data.Constant;
 import fun.project.morsecode.Data.MorseCode;
 import fun.project.morsecode.Data.MorseSetting;
 import fun.project.morsecode.Data.MorseTiming;

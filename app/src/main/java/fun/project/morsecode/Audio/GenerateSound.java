@@ -10,7 +10,6 @@ import java.util.Arrays;
 
 import fun.project.morsecode.Data.Constant;
 import fun.project.morsecode.Data.MorseCode;
-import fun.project.morsecode.Data.MorseSetting;
 import fun.project.morsecode.Data.MorseTiming;
 
 import static fun.project.morsecode.Data.Constant.SAMPLERATE;
