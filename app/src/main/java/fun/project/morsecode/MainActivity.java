@@ -77,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 result.setText("");
                 result_morse.setText("");
+                // stop doing
+                inDoing = false;
             }
         });
         tap.setOnTouchListener(new View.OnTouchListener() {
@@ -86,9 +88,19 @@ public class MainActivity extends AppCompatActivity {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     down = System.currentTimeMillis();
                     // false allows the application to handle state event
+                    // start the audio
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            GenerateSound.playSound(morseSetting.getFrequency());
+                        }
+                    });
                     return false;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     up = System.currentTimeMillis();
+                    // stop the audio
+                    handler.removeCallbacksAndMessages(null);
+                    GenerateSound.stopPlay();
                     if (!inDoing){
                         start();
                         inDoing = true;

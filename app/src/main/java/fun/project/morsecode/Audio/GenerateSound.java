@@ -22,7 +22,8 @@ public class GenerateSound {
     public GenerateSound(){};
     private static short[] genTone(int frequency){
         // create a sine wave
-        int duration = 3;
+        // longest duration
+        int duration = 5;
         numSamples = duration * SAMPLERATE;
         short[] generatedSnd = new short[numSamples];
 
@@ -114,11 +115,9 @@ public class GenerateSound {
     }
 
     public static void  playSound(int frequency, String sentence){
+        // stop any current audio track
+        stopPlay();
         short[] generatedSnd = sentence == null ? genTone(frequency) : genSentenceTone(frequency,sentence.toLowerCase());
-        if (audioTrack != null){
-            audioTrack.pause();
-            audioTrack.flush();
-        }
         audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
                 Constant.SAMPLERATE, AudioFormat. CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, numSamples * 2,
@@ -127,10 +126,36 @@ public class GenerateSound {
         audioTrack.play();
     }
 
-    public static void stopPlay(){
-        if (audioTrack != null){
-            audioTrack.pause();
-            audioTrack.flush();
+    public static void playSound(int frequency){
+        // stop any current audio track
+        stopPlay();
+        short[] generatedSnd = genTone(frequency);
+        Log.d(TAG, "playSound: " + numSamples * 2);
+        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
+                Constant.SAMPLERATE, AudioFormat. CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, numSamples * 2,
+                AudioTrack.MODE_STATIC);
+        try {
+            audioTrack.write(generatedSnd, 0, numSamples);
+            audioTrack.setLoopPoints(0,numSamples,-1);
+            audioTrack.play();
         }
+        catch (IllegalStateException e){
+            Log.d(TAG, "playSound: Error " + e);
+        }
+    }
+    public static void stopPlay(){
+        try {
+            if (audioTrack != null){
+                audioTrack.pause();
+                audioTrack.release();
+                audioTrack.flush();
+                audioTrack = null;
+            }
+        }
+        catch (IllegalStateException e){
+            Log.d(TAG, "playSound: Error " + e);
+        }
+
     }
 }
