@@ -116,7 +116,7 @@ public class GenerateSound {
     public static void  playSound(int frequency, String sentence){
         // stop any current audio track
         stopPlay();
-        short[] generatedSnd = sentence == null ? genTone(frequency) : genSentenceTone(frequency,sentence.toLowerCase());
+        short[] generatedSnd = genSentenceTone(frequency,sentence.toLowerCase());
         audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
                 Constant.SAMPLERATE, AudioFormat. CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, numSamples * 2,

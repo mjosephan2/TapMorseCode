@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivityMorse";
     private TextView result,result_morse;
     private Boolean inDoing = false;
-    private int dot_duration;
     private long down;
     private long up;
     private MorseSetting morseSetting;
@@ -44,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
         // using PARIS standard
         // set the dotDuration
         MorseTiming.setDotDuration(1200/morseSetting.getSpeed_gap());
-        dot_duration = 1200/morseSetting.getSpeed_gap();
 
         result = findViewById(R.id.result);
         result_morse = findViewById(R.id.result_morse);
@@ -257,7 +255,6 @@ public class MainActivity extends AppCompatActivity {
                         speed_gap_textView_val.setText(Integer.toString(speed_gap.getProgress()+min));
                         // update dot duration
                         MorseTiming.setDotDuration(1200/(speed_gap.getProgress()+min));
-                        dot_duration = 1200/(speed_gap.getProgress()+min);
 
                         // update UI timing
                         status.setText(String.format(
