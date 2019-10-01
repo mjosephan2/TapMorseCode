@@ -1,4 +1,4 @@
-# TapMorseCode
+# MTap
 A simple application that allows you to practice your Morse code skills through tapping the button rhythmically.
 
 ## Display
